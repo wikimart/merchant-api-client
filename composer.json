@@ -1,0 +1,30 @@
+{
+    "name": "wikimart/merchant-api-client",
+    "description": "Wikimart merchant API client",
+    "keywords": ["wikimart", "api", "merchant"],
+    "homepage": "http://merchant.wikimart.ru/api/",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name"  : "Mike Kabischev",
+            "email" : "kabischev.michail@wikimart.ru",
+            "role"  : "Developer"
+        },
+        {
+            "name"  : "Vadim Petrov",
+            "email" : "vadim.petrov@wikimart.ru",
+            "role"  : "Developer"
+        }
+    ],
+    "support": {
+        "email"  : "support@wikimart.ru"
+    },
+    "require": {
+        "php": ">=5.3.2",
+        "monolog/monolog": "1.*"
+    },
+    "autoload": {
+        "psr-0": { "Wikimart": "src/" }
+    }
+}
