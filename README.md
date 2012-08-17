@@ -1,4 +1,4 @@
-merchant-api-client
+Merchant API client
 ===================
 
-Merchant API client
+Описание
