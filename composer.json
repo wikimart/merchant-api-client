@@ -25,6 +25,6 @@
         "monolog/monolog": "1.*"
     },
     "autoload": {
-        "psr-0": { "MerchantAPIClient": "src/" }
+        "psr-0": { "Wikimart": "src/" }
     }
 }
