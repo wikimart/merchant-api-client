@@ -15,6 +15,11 @@
             "name"  : "Vadim Petrov",
             "email" : "vadim.petrov@wikimart.ru",
             "role"  : "Developer"
+        },
+        {
+            "name"  : "Vitaliy Tolmachev",
+            "email" : "vitaliy.tolmachev@wikimart.ru",
+            "role"  : "Developer"
         }
     ],
     "support": {
