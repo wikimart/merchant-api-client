@@ -73,7 +73,7 @@ class Client
     /**
      * @param string $URI
      * @param string $method Метод HTTP запроса. Может принимать значения: 'GET', 'POST', 'PUT', 'DELETE'.
-     * @param array  $body
+     * @param string $body
      *
      * @return \Wikimart\MerchantAPIClient\Response
      * @throws MerchantAPIException
@@ -95,7 +95,7 @@ class Client
         }
 
         if ( $body !== null && !is_string( $body ) ) {
-            throw new \InvalidArgumentException( 'Argument \'$data\' must be string' );
+            throw new \InvalidArgumentException( 'Argument \'$body\' must be string' );
         }
 
         $date = new \DateTime();
@@ -113,12 +113,12 @@ class Client
             case self::METHOD_GET:
                 break;
             case self::METHOD_POST:
-                curl_setopt( $curl, CURLOPT_POST, true );
+                curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'POST' );
+                curl_setopt( $curl, CURLOPT_POSTFIELDS, $body );
                 break;
             case self::METHOD_PUT:
-                curl_setopt( $curl, CURLOPT_PUT, true );
-                curl_setopt( $curl, CURLOPT_INFILE, $body );
-                curl_setopt( $curl, CURLOPT_INFILESIZE, strlen( $body ) );
+                curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'PUT' );
+                curl_setopt( $curl, CURLOPT_POSTFIELDS, $body );
                 break;
             case self::METHOD_DELETE:
                 curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'DELETE' );
