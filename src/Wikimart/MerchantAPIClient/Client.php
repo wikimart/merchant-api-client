@@ -101,22 +101,22 @@ class Client
         $date = new \DateTime();
 
         $curl = curl_init( $this->host . $URI );
-        curl_setopt( $curl, CURLOPT_HTTPHEADER,
-            array(
-                'Accept: application/json',
-                'X-WM-Date: ' . $date->format( DATE_RFC2822 ),
-                'X-WM-Authentication: ' . $this->getAccessId() . ':' . $this->generateSignature( $URI, $method, $body, $date )
-            )
+        $headers = array(
+            'Accept: application/json',
+            'X-WM-Date: ' . $date->format( DATE_RFC2822 ),
+            'X-WM-Authentication: ' . $this->getAccessId() . ':' . $this->generateSignature( $URI, $method, $body, $date )
         );
         curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
         switch ( $method ) {
             case self::METHOD_GET:
                 break;
             case self::METHOD_POST:
+                $headers[] = 'Content-Type: application/json';
                 curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'POST' );
                 curl_setopt( $curl, CURLOPT_POSTFIELDS, $body );
                 break;
             case self::METHOD_PUT:
+                $headers[] = 'Content-Type: application/json';
                 curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'PUT' );
                 curl_setopt( $curl, CURLOPT_POSTFIELDS, $body );
                 break;
@@ -124,6 +124,7 @@ class Client
                 curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'DELETE' );
                 break;
         }
+        curl_setopt( $curl, CURLOPT_HTTPHEADER, $headers );
         $httpResponse = curl_exec( $curl );
         if ( $httpResponse === false ) {
             throw new MerchantAPIException( 'Can`t get response' );
