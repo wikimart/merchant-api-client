@@ -225,11 +225,11 @@ class Client
         }
 
         if ( !is_null( $transitionDateTo ) ) {
-            $params['transitionDateFrom'] = $transitionDateFrom->format( DATE_RFC2822 );
+            $params['transitionDateFrom'] = urlencode( $transitionDateFrom->format( 'c' ) );
         }
 
         if ( !is_null( $transitionDateTo ) ) {
-            $params['transitionDateTo'] = $transitionDateTo->format( DATE_RFC2822 );
+            $params['transitionDateTo'] = urlencode( $transitionDateTo->format( 'c' ) );
         }
 
         if ( !is_null( $transitionStatus ) ) {
