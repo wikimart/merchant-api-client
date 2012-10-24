@@ -17,6 +17,8 @@ class Client
     const STATUS_INVALID   = 'invalid';
     const STATUS_FAKED     = 'faked';
 
+    const VERSION          = '1.0.0';
+
     /**
      * @var string Хост
      */
@@ -102,6 +104,7 @@ class Client
 
         $curl = curl_init( $this->host . $URI );
         $headers = array(
+            'User-agent: Mozilla/5.0 (compatible; Wikimart-MerchantAPIClient/'. self::VERSION .'; +vitaliy.tolmachev@wikimart.ru)',
             'Accept: application/json',
             'X-WM-Date: ' . $date->format( DATE_RFC2822 ),
             'X-WM-Authentication: ' . $this->getAccessId() . ':' . $this->generateSignature( $URI, $method, $body, $date )
