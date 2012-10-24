@@ -17,7 +17,7 @@ class Client
     const STATUS_INVALID   = 'invalid';
     const STATUS_FAKED     = 'faked';
 
-    const VERSION          = '1.0.0';
+    const VERSION          = '1.0';
 
     /**
      * @var string Хост
