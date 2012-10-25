@@ -1,4 +1,4 @@
-Merchant API client
+Wikimart Merchant API client
 ===================
 
-Описание
+Описание Wikimart Merchant API: http://merchant.wikimart.ru/api/1.0/doc
