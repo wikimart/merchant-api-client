@@ -4,6 +4,8 @@ namespace Wikimart\MerchantAPIClient;
 
 class Client
 {
+    const API_PATH = '/api/1.0/';
+
     const METHOD_GET    = 'GET';
     const METHOD_POST   = 'POST';
     const METHOD_PUT    = 'PUT';
@@ -16,6 +18,16 @@ class Client
     const STATUS_ANNULED   = 'annuled';
     const STATUS_INVALID   = 'invalid';
     const STATUS_FAKED     = 'faked';
+
+    private $validStatuses = array(
+        self::STATUS_OPENED,
+        self::STATUS_CANCELED,
+        self::STATUS_REJECTED,
+        self::STATUS_CONFIRMED,
+        self::STATUS_ANNULED,
+        self::STATUS_INVALID,
+        self::STATUS_FAKED
+    );
 
     /**
      * @var string Хост
@@ -164,9 +176,6 @@ class Client
         return hash_hmac( 'sha1', $stringToHash, $this->getSecretKey() );
     }
 
-#                                           A P I      M E T H O D S
-#                                          ==========================
-
     /**
      * Получение информации о заказе
      *
@@ -180,14 +189,14 @@ class Client
         if ( !is_integer( $orderID ) ) {
             throw new \InvalidArgumentException( 'Argument \'$orderID\' must be integer' );
         }
-        return $this->api( '/api/1.0/orders/' . $orderID, self::METHOD_GET );
+        return $this->api( self::API_PATH . 'orders/' . $orderID, self::METHOD_GET );
     }
 
     /**
      * Получение списка заказов
      *
-     * @param integer          $count              Колличество возвращаемых заказов
-     * @param integer          $offset             Смещение
+     * @param integer          $pageSize           Колличество возвращаемых заказов на "странице"
+     * @param integer          $page               Порядковый номер "страницы" (начиная с 1)
      * @param null|string      $status             Фильтр по статусам. Может принимать значения: opened (Новые),
      *                                             canceled (Отменённые), rejected (Не принятые), confirmed (Принятые),
      *                                             annuled (Аннулированные), invalid (Ошибки Викимарта), faked (Фейковые)
@@ -198,27 +207,25 @@ class Client
      * @return \Wikimart\MerchantAPIClient\Response
      * @throws \InvalidArgumentException
      */
-    public function methodGetOrderList( $count, $offset, $status = null, \DateTime $transitionDateFrom = null, \DateTime $transitionDateTo = null, $transitionStatus = null )
+    public function methodGetOrderList( $pageSize, $page, $status = null, \DateTime $transitionDateFrom = null, \DateTime $transitionDateTo = null, $transitionStatus = null )
     {
         $params = array();
 
-        if ( !is_integer( $count ) ) {
-            throw new \InvalidArgumentException( 'Argument \'$count\' must be integer' );
+        if ( !is_integer( $pageSize ) ) {
+            throw new \InvalidArgumentException( 'Argument \'$pageSize\' must be integer' );
         } else {
-            $params['pageSize'] = $count;
+            $params['pageSize'] = $pageSize;
         }
 
-        if ( !is_integer( $offset ) ) {
-            throw new \InvalidArgumentException( 'Argument \'$offset\' must be integer' );
+        if ( !is_integer( $page ) ) {
+            throw new \InvalidArgumentException( 'Argument \'$page\' must be integer' );
         } else {
-            $params['offset'] = $offset;
+            $params['page'] = $page;
         }
-
-        $validStatuses = array( 'opened', 'canceled', 'rejected', 'confirmed', 'annuled', 'invalid', 'faked' );
 
         if ( !is_null( $status ) ) {
-            if ( !in_array( $status, $validStatuses ) ) {
-                throw new \InvalidArgumentException( 'Valid values for argument \'$status\' is: ' . implode( ', ', $validStatuses ) );
+            if ( !in_array( $status, $this->validStatuses ) ) {
+                throw new \InvalidArgumentException( 'Valid values for argument \'$status\' is: ' . implode( ', ', $this->validStatuses ) );
             } else {
                 $params['status'] = $status;
             }
@@ -233,14 +240,14 @@ class Client
         }
 
         if ( !is_null( $transitionStatus ) ) {
-            if ( !in_array( $status, $transitionStatus ) ) {
-                throw new \InvalidArgumentException( 'Valid values for argument \'$transitionStatus\' is: ' . implode( ', ', $validStatuses ) );
+            if ( !in_array( $transitionStatus, $this->validStatuses ) ) {
+                throw new \InvalidArgumentException( 'Valid values for argument \'$transitionStatus\' is: ' . implode( ', ', $this->validStatuses ) );
             } else {
                 $params['transitionStatus'] = $transitionStatus;
             }
         }
 
-        return $this->api( '/api/1.0/orders?' . http_build_query( $params ), self::METHOD_GET );
+        return $this->api( self::API_PATH . 'orders?' . http_build_query( $params ), self::METHOD_GET );
     }
 
     /**
@@ -265,9 +272,8 @@ class Client
             throw new \InvalidArgumentException( 'Argument \'$orderID\' must be integer' );
         }
 
-        $validStatuses = array( 'opened', 'canceled', 'rejected', 'confirmed', 'annuled', 'invalid', 'faked' );
-        if ( !in_array( $status, $validStatuses ) ) {
-            throw new \InvalidArgumentException( 'Valid values for argument \'$status\' is: ' . implode( ', ', $validStatuses ) );
+        if ( !in_array( $status, $this->validStatuses ) ) {
+            throw new \InvalidArgumentException( 'Valid values for argument \'$status\' is: ' . implode( ', ', $this->validStatuses ) );
         }
 
         if ( !is_integer( $reasonID ) ) {
@@ -285,7 +291,7 @@ class Client
                 'comment' => $comment,
             )
         );
-        return $this->api( "/api/1.0/orders/$orderID/status", self::METHOD_PUT, json_encode( $putBody ) );
+        return $this->api( self::API_PATH . "orders/$orderID/status", self::METHOD_PUT, json_encode( $putBody ) );
     }
 
     /**
@@ -301,6 +307,6 @@ class Client
         if ( !is_integer( $orderID ) ) {
             throw new \InvalidArgumentException( 'Argument \'$orderID\' must be integer' );
         }
-        return $this->api( "/api/1.0/orders/$orderID/statuses", self::METHOD_GET );
+        return $this->api( self::API_PATH . "orders/$orderID/statuses", self::METHOD_GET );
     }
 }
