@@ -234,7 +234,7 @@ class Client
             }
         }
 
-        if ( !is_null( $transitionDateTo ) ) {
+        if ( !is_null( $transitionDateFrom ) ) {
             $params['transitionDateFrom'] = urlencode( $transitionDateFrom->format( 'c' ) );
         }
 
@@ -288,11 +288,9 @@ class Client
         }
 
         $putBody = array(
-            'request' => array(
-                'status' => $status,
-                'reasonId' => $reasonID,
-                'comment' => $comment,
-            )
+            'status' => $status,
+            'reasonId' => $reasonID,
+            'comment' => $comment,
         );
         return $this->api( self::API_PATH . "orders/$orderID/status", self::METHOD_PUT, json_encode( $putBody ) );
     }
