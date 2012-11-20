@@ -235,11 +235,11 @@ class Client
         }
 
         if ( !is_null( $transitionDateFrom ) ) {
-            $params['transitionDateFrom'] = urlencode( $transitionDateFrom->format( 'c' ) );
+            $params['transitionDateFrom'] = $transitionDateFrom->format( 'c' );
         }
 
         if ( !is_null( $transitionDateTo ) ) {
-            $params['transitionDateTo'] = urlencode( $transitionDateTo->format( 'c' ) );
+            $params['transitionDateTo'] = $transitionDateTo->format( 'c' );
         }
 
         if ( !is_null( $transitionStatus ) ) {
@@ -249,7 +249,6 @@ class Client
                 $params['transitionStatus'] = $transitionStatus;
             }
         }
-
         return $this->api( self::API_PATH . 'orders?' . http_build_query( $params ), self::METHOD_GET );
     }
 
