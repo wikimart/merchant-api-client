@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../src/bootstrap.php';
 
-$merchantClient  = new Wikimart\MerchantAPIClient\Client( 'http://merchant-api.lan', '13473618150931', 'Mh5EDL9TPnm3A1JAIoHM0w' );
+$merchantClient  = new Wikimart\MerchantAPIClient\Client( 'http://merchant.wikimart.ru', '13473618150931', 'Mh5EDL9TPnm3A1JAIoHM0w' );
 
 // История статусов заказа 787592
 $result = $merchantClient->methodGetOrderStatusHistory( 660506 );
