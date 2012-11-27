@@ -18,6 +18,9 @@ class Client
     const STATUS_ANNULED   = 'annuled';
     const STATUS_INVALID   = 'invalid';
     const STATUS_FAKED     = 'faked';
+    
+    const DATA_JSON        = 'json';
+    const DATA_XML         = 'xml';
 
     private $validStatuses = array(
         self::STATUS_OPENED,
@@ -27,6 +30,11 @@ class Client
         self::STATUS_ANNULED,
         self::STATUS_INVALID,
         self::STATUS_FAKED
+    );
+    
+    private $valideDataFormat = array(
+        self::DATA_JSON,
+        self::DATA_XML
     );
 
     const VERSION          = '1.0';
@@ -45,17 +53,29 @@ class Client
      * @var string Секретный ключ
      */
     protected $secretKey;
+    
+    /**
+    * @var string Тип отправляемых и получаемых данных (json,xml)
+    */
+    protected $dataType;
 
     /**
      * @param $host      Хост Wikimart merchant API
      * @param $appID     Идентификатор доступа
      * @param $appSecret Секретный ключ
+     * @param $dataType  Тип данных
      */
-    public function __construct( $host, $appID, $appSecret )
+    public function __construct( $host, $appID, $appSecret, $dataType = self::DATA_JSON )
     {
         $this->host      = $host;
         $this->accessId  = $appID;
         $this->secretKey = $appSecret;
+        
+        if ( !in_array( $dataType, $this->valideDataFormat ) ) {
+            throw new \InvalidArgumentException( 'Valid values for data type is: ' . implode( ', ', $this->valideDataFormat ) );
+        }
+        
+        $this->dataType  = $dataType;
     }
 
     /**
@@ -82,6 +102,14 @@ class Client
     public function getSecretKey()
     {
         return $this->secretKey;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getDataType()
+    {
+        return $this->dataType;
     }
 
     /**
@@ -117,7 +145,7 @@ class Client
         $curl = curl_init( $this->host . $URI );
         $headers = array(
             'User-agent: Mozilla/5.0 (compatible; Wikimart-MerchantAPIClient/'. self::VERSION .'; +vitaliy.tolmachev@wikimart.ru)',
-            'Accept: application/json',
+            'Accept: application/' . $this->getDataType(),
             'X-WM-Date: ' . $date->format( DATE_RFC2822 ),
             'X-WM-Authentication: ' . $this->getAccessId() . ':' . $this->generateSignature( $URI, $method, $body, $date )
         );
@@ -126,12 +154,12 @@ class Client
             case self::METHOD_GET:
                 break;
             case self::METHOD_POST:
-                $headers[] = 'Content-Type: application/json';
+                $headers[] = 'Content-Type: application/' . $this->getDataType();
                 curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'POST' );
                 curl_setopt( $curl, CURLOPT_POSTFIELDS, $body );
                 break;
             case self::METHOD_PUT:
-                $headers[] = 'Content-Type: application/json';
+                $headers[] = 'Content-Type: application/' . $this->getDataType();
                 curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'PUT' );
                 curl_setopt( $curl, CURLOPT_POSTFIELDS, $body );
                 break;
@@ -309,4 +337,59 @@ class Client
         }
         return $this->api( self::API_PATH . "orders/$orderID/statuses", self::METHOD_GET );
     }
+    
+    /**
+     * Добавление комментария к заказу
+     * 
+     * @param $orderID
+     * @param $comment
+     * 
+     * @return Response
+     * @throws \InvalidArgumentException
+     */
+    public function methodOrderAddComment( $orderID, $comment )
+    {
+        if ( !is_integer( $orderID ) ) {
+            throw new \InvalidArgumentException( 'Argument \'$orderID\' must be integer' );
+        }
+        
+        if ( !is_string( $comment ) ) {
+            throw new \InvalidArgumentException( 'Argument \'$comment\' must be string' );
+        }
+        
+        $postBody = '';
+        
+        if( $this->getDataType() == self::DATA_JSON ) {
+            $postBody = json_encode( array( 'text' => $comment ) );
+        } else {
+            $postBody = '<?xml version="1.0" encoding="UTF-8"?>
+                             <request>
+                                 <text>
+                                	 <![CDATA[' . $comment . ']]>
+                                 </text>
+                        	 </request>';
+        }
+        
+        return $this->api( self::API_PATH . "orders/$orderID/comments", self::METHOD_POST, $postBody );
+                
+    }
+    
+    /**
+     * Получение комментариев заказа
+     * 
+     * @param $orderID
+     * 
+     * @return Response
+     * @throws \InvalidArgumentException
+     */
+    public function methodOrderGetComments( $orderID )
+    {
+        if ( !is_integer( $orderID ) ) {
+            throw new \InvalidArgumentException( 'Argument \'$orderID\' must be integer' );
+        }
+
+        return $this->api( self::API_PATH . "orders/$orderID/comments", self::METHOD_GET );
+    }
+    
+    
 }
