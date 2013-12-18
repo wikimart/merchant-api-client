@@ -64,6 +64,11 @@ class Client
     protected $dataType;
 
     /**
+     * @var array
+     */
+    protected $subjectAppealCache = null;
+
+    /**
      * @param $host      Хост Wikimart merchant API
      * @param $appID     Идентификатор доступа
      * @param $appSecret Секретный ключ
@@ -501,6 +506,23 @@ class Client
         }
         $putBody = $this->getBodyForStateUpdate( $state, $datetime );
         return $this->api( self::API_PATH . "orders/$orderID/packages/$packageID/states", static::METHOD_PUT, $putBody );
+    }
+
+    /**
+     * Возвращает возможные причины притензии по заказу
+     *
+     * @param $orderID
+     *
+     * @return Response
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function methodGetSubjectAppeal($orderID)
+    {
+        if ( !is_integer( $orderID ) ) {
+            throw new InvalidArgumentException( 'Argument \'$orderID\' must be integer' );
+        }
+        return $this->api( self::API_PATH . "orders/{$orderID}/appealsubjects", static::METHOD_GET );
     }
 
     /**
