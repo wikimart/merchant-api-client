@@ -504,6 +504,26 @@ class Client
     }
 
     /**
+     * Обновление товаров
+     *
+     * @param array $offers
+     *
+     * @return Response
+     * @throws \InvalidArgumentException
+     */
+    public function methodSetOffers( $offers )
+    {
+        if ( !is_array( $offers ) ) {
+            throw new InvalidArgumentException( 'Argument \'$offers\' must be array' );
+        }
+        $putBody = array(
+            'offers' => $offers
+        );
+        return $this->api( self::API_PATH . 'offers', static::METHOD_PUT, json_encode( $putBody ) );
+    }
+
+    /**
+     *
      * @param string   $state
      * @param DateTime $datetime
      *
