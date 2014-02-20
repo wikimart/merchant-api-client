@@ -5,6 +5,7 @@ namespace Wikimart\MerchantAPIClient;
 use DateTime;
 use InvalidArgumentException;
 use SimpleXMLElement;
+use Wikimart\MerchantAPIClient\Entities\PostBundle;
 
 class Client
 {
@@ -545,4 +546,94 @@ class Client
         }
         return $body;
     }
+
+    /**
+     * Создание бандла с идентификатором ID
+     *
+     * @param int        $bundleId
+     * @param PostBundle $bundle
+     *
+     * @return Response
+     * @throws \InvalidArgumentException
+     */
+    public function methodBundleCreate( $bundleId, PostBundle $bundle )
+    {
+        if ( !is_integer( $bundleId ) ) {
+            throw new InvalidArgumentException( 'Argument \'$bundleID\' must be integer' );
+        }
+        $postBody = $this->getBodyForBundleModification( $bundle );
+
+        return $this->api( self::API_PATH . "bundles/{$bundleId}", self::METHOD_POST, $postBody );
+    }
+
+    /**
+     * Изменение бандла с идентификатором ID
+     *
+     * @param int        $bundleId
+     * @param PostBundle $bundle
+     *
+     * @return Response
+     * @throws \InvalidArgumentException
+     */
+    public function methodBundleUpdate( $bundleId, PostBundle $bundle )
+    {
+        if ( !is_integer( $bundleId ) ) {
+            throw new InvalidArgumentException( 'Argument \'$bundleID\' must be integer' );
+        }
+        $postBody = $this->getBodyForBundleModification( $bundle );
+
+        return $this->api( self::API_PATH . "bundles/{$bundleId}", self::METHOD_PUT, $postBody );
+    }
+
+    /**
+     * @param PostBundle $bundle
+     *
+     * @return string
+     */
+    protected function getBodyForBundleModification( PostBundle $bundle )
+    {
+        if ( $this->getDataType() == static::DATA_JSON ) {
+            $body = json_encode( $bundle->getAttributes() );
+        } else {
+            $xml = new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8"?><request></request>' );
+            $xml->addChild( 'name', $bundle->getName() );
+            $xml->addChild( 'description', $bundle->getDescription() );
+            if ( !is_null( $bundle->getStartTime() ) ) {
+                $xml->addChild( 'startTime', $bundle->getStartTime() );
+            }
+            if ( !is_null( $bundle->getEndTime() ) ) {
+                $xml->addChild( 'endTime', $bundle->getEndTime() );
+            }
+            if ( !is_null( $bundle->getIsAvailable() ) ) {
+                $xml->addChild( 'isAvailable', $bundle->getIsAvailable() );
+            }
+            $slots = $xml->addChild( 'slots' );
+            foreach ( $bundle->getSlots() as $slot ) {
+                $slotsItem = $slots->addChild( 'item' );
+                $slotsItem->addChild( 'isAnchor', $slot->getIsAnchor() );
+
+                $offers = $slotsItem->addChild( 'offers' );
+                foreach ( $slot->getOffers() as $offer ) {
+                    $offersItem = $offers->addChild( 'item' );
+                    $offersItem->addChild( 'ownId', $offer->getOwnId() );
+                    if ( !is_null( $offer->getYmlId() ) ) {
+                        $offersItem->addChild( 'ymlId', $offer->getYmlId() );
+                    }
+                }
+                if ( !is_null( $slot->getBonusType() ) && !is_null( $slot->getBonusAmount() ) ) {
+                    $bonus = $slotsItem->addChild( 'bonus' );
+                    $bonus->addChild( 'type', $slot->getBonusType() );
+                    $bonus->addChild( 'value', $slot->getBonusAmount() );
+                }
+            }
+            if ( !is_null( $bundle->getBonusType() ) && !is_null( $bundle->getBonusAmount() ) ) {
+                $bonus = $xml->addChild( 'bonus' );
+                $bonus->addChild( 'type', $bundle->getBonusType() );
+                $bonus->addChild( 'value', $bundle->getBonusAmount() );
+            }
+            $body = $xml->asXML();
+        }
+        return $body;
+    }
+
 }
