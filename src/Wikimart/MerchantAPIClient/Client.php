@@ -65,6 +65,11 @@ class Client
     protected $dataType;
 
     /**
+     * @var array
+     */
+    protected $subjectAppealCache = null;
+
+    /**
      * @param $host      Хост Wikimart merchant API
      * @param $appID     Идентификатор доступа
      * @param $appSecret Секретный ключ
@@ -502,6 +507,70 @@ class Client
         }
         $putBody = $this->getBodyForStateUpdate( $state, $datetime );
         return $this->api( self::API_PATH . "orders/$orderID/packages/$packageID/states", static::METHOD_PUT, $putBody );
+    }
+
+    /**
+     * Возвращает возможные причины притензии по заказу
+     *
+     * @param int $orderID Уникальный идентификатор заказа
+     *
+     * @return Response
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function methodGetSubjectAppeal($orderID)
+    {
+        if ( !is_integer( $orderID ) ) {
+            throw new InvalidArgumentException( 'Argument \'$orderID\' must be integer' );
+        }
+        return $this->api( self::API_PATH . "orders/{$orderID}/appealsubjects", static::METHOD_GET );
+    }
+
+    /**
+     * Создает притензию к заказу с идентификатором $orderID
+     *
+     * @param int $orderID Уникальный идентификатор заказа
+     * @param int $subjectID Идентификатор причины притензии
+     * @param string $comment Комментарий к притензии
+     *
+     * @return Response
+     *
+     * @throws \InvalidArgumentException
+     * @throws \DomainException
+     */
+    public function methodCreateAppeal($orderID,$subjectID,$comment='')
+    {
+        if (!is_integer($orderID)) {
+            throw new InvalidArgumentException('Argument \'$orderID\' must be integer');
+        }
+        if (!is_integer($subjectID)) {
+            throw new InvalidArgumentException('Argument \'$subjectId\' must be integer');
+        }
+        if (!is_string($comment)) {
+            throw new InvalidArgumentException('Argument \'$comment\' must be string');
+        }
+
+        $postBody = '';
+
+        if ($this->getDataType() == self::DATA_JSON) {
+            $postBody = json_encode(
+                array(
+                    'comment' => $comment,
+                    'subjectID' => $subjectID
+                )
+            );
+        } elseif ($this->getDataType() == self::DATA_XML) {
+            $postBody = '<?xml version="1.0" encoding="UTF-8"?>
+                             <request>
+                                 <subjectID>' . $subjectID . '</subjectID>
+                                 <comment>
+                                	 <![CDATA[' . $comment . ']]>
+                                 </comment>
+                        	 </request>';
+        } else {
+            throw new \DomainException('Unknown date type');
+        }
+        return $this->api(self::API_PATH . "orders/{$orderID}/appeals/", static::METHOD_POST, $postBody);
     }
 
     /**
