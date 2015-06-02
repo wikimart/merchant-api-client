@@ -317,7 +317,7 @@ class Client
             throw new InvalidArgumentException( 'Valid values for argument \'$status\' is: ' . implode( ', ', $this->validStatuses ) );
         }
 
-        if ( !is_integer( $reasonID ) ) {
+        if ( !is_null( $reasonID ) && !is_integer( $reasonID ) ) {
             throw new InvalidArgumentException( 'Argument \'$reasonID\' must be integer' );
         }
 
