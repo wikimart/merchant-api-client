@@ -23,7 +23,7 @@ class Client
     const STATUS_ANNULED   = 'annuled';
     const STATUS_INVALID   = 'invalid';
     const STATUS_FAKED     = 'faked';
-    
+
     const DATA_JSON        = 'json';
     const DATA_XML         = 'xml';
 
@@ -36,7 +36,7 @@ class Client
         self::STATUS_INVALID,
         self::STATUS_FAKED
     );
-    
+
     private $valideDataFormat = array(
         self::DATA_JSON,
         self::DATA_XML
@@ -58,7 +58,7 @@ class Client
      * @var string Секретный ключ
      */
     protected $secretKey;
-    
+
     /**
     * @var string Тип отправляемых и получаемых данных (json,xml)
     */
@@ -81,11 +81,11 @@ class Client
         $this->host      = $host;
         $this->accessId  = $appID;
         $this->secretKey = $appSecret;
-        
+
         if ( !in_array( $dataType, $this->valideDataFormat ) ) {
             throw new InvalidArgumentException( 'Valid values for data type is: ' . implode( ', ', $this->valideDataFormat ) );
         }
-        
+
         $this->dataType  = $dataType;
     }
 
@@ -114,7 +114,7 @@ class Client
     {
         return $this->secretKey;
     }
-    
+
     /**
      * @return string
      */
@@ -307,6 +307,16 @@ class Client
         return $this->api( "/api/1.0/orders/$orderID/transitions", self::METHOD_GET );
     }
 
+    /**
+     * Запрос на смену статуса заказа
+     *
+     * @param $orderID Идентификатор заказа
+     * @param $status Новый статус заказа
+     * @param $reasonID Идентификатор причины перехода
+     * @param $comment Комментарий для смены статуса
+     * @return Response
+     * @throws \InvalidArgumentException
+     */
     public function methodSetOrderStatus( $orderID, $status, $reasonID, $comment )
     {
         if ( !is_integer( $orderID ) ) {
@@ -348,13 +358,13 @@ class Client
         }
         return $this->api( self::API_PATH . "orders/$orderID/statuses", self::METHOD_GET );
     }
-    
+
     /**
      * Добавление комментария к заказу
-     * 
+     *
      * @param $orderID
      * @param $comment
-     * 
+     *
      * @return Response
      * @throws InvalidArgumentException
      */
@@ -363,13 +373,13 @@ class Client
         if ( !is_integer( $orderID ) ) {
             throw new InvalidArgumentException( 'Argument \'$orderID\' must be integer' );
         }
-        
+
         if ( !is_string( $comment ) ) {
             throw new InvalidArgumentException( 'Argument \'$comment\' must be string' );
         }
-        
+
         $postBody = '';
-        
+
         if( $this->getDataType() == self::DATA_JSON ) {
             $postBody = json_encode( array( 'text' => $comment ) );
         } else {
@@ -380,16 +390,16 @@ class Client
                                  </text>
                         	 </request>';
         }
-        
+
         return $this->api( self::API_PATH . "orders/$orderID/comments", self::METHOD_POST, $postBody );
-                
+
     }
-    
+
     /**
      * Получение комментариев заказа
-     * 
+     *
      * @param $orderID
-     * 
+     *
      * @return Response
      * @throws InvalidArgumentException
      */
@@ -403,7 +413,7 @@ class Client
     }
 
     /**
-     * Регистрация почтового отправления
+     * Регистрация нового отправления
      *
      * @param int                  $orderID
      * @param Entities\PostPackage $package
@@ -480,7 +490,7 @@ class Client
     }
 
     /**
-     * Обновление статуса отправления
+     * Обновить статус посылки
      *
      * @param int      $orderID
      * @param int      $packageID
@@ -510,7 +520,7 @@ class Client
     }
 
     /**
-     * Возвращает возможные причины притензии по заказу
+     * Получение списка возможных причин претензий
      *
      * @param int $orderID Уникальный идентификатор заказа
      *
@@ -527,7 +537,7 @@ class Client
     }
 
     /**
-     * Создает притензию к заказу с идентификатором $orderID
+     * Создание претензии по заказу
      *
      * @param int $orderID Уникальный идентификатор заказа
      * @param int $subjectID Идентификатор причины притензии
@@ -655,6 +665,22 @@ class Client
     }
 
     /**
+     * Удаление бандла
+     *
+     * @param $bundleId Идентификатор бандла
+     * @return Response
+     * @throws \InvalidArgumentException
+     */
+    public function methodBundleDelete( $bundleId )
+    {
+        if ( !is_integer( $bundleId ) ) {
+            throw new InvalidArgumentException( 'Argument \'$bundleID\' must be integer' );
+        }
+
+        return $this->api( self::API_PATH . "bundles/{$bundleId}", self::METHOD_DELETE );
+    }
+
+    /**
      * @param PostBundle $bundle
      *
      * @return string
@@ -705,4 +731,85 @@ class Client
         return $body;
     }
 
+    /**
+     * Получение статусов заказа
+     *
+     * @return Response
+     */
+    public function methodGetDirectoryOrderStatuses()
+    {
+        return $this->api( self::API_PATH . "directory/order/statuses", self::METHOD_GET);
+    }
+
+    /**
+     * Получение списка вариантов доставки магазина
+     *
+     * @param $sellerId Идентификатор магазина
+     *
+     * @return Response
+     * @throws \InvalidArgumentException
+     */
+    public function methodGetDirectorySellerDeliveryVariants($sellerId)
+    {
+        if ( !is_integer( $sellerId ) ) {
+            throw new InvalidArgumentException( 'Argument \'$sellerId\' must be integer' );
+        }
+        return $this->api( self::API_PATH . "directory/seller/{$sellerId}/delivery/variants/", self::METHOD_GET );
+    }
+
+    /**
+     * Получение списка регионов/городов доставки
+     *
+     * @param $deliveryId Идентификатор доставки
+     *
+     * @return Response
+     * @throws InvalidArgumentException
+     */
+    public function methodGetDirectoryDeliveryLocation($deliveryId)
+    {
+        if ( !is_integer( $deliveryId ) ) {
+            throw new InvalidArgumentException( 'Argument \'$deliveryId\' must be integer' );
+        }
+        return $this->api( self::API_PATH . "directory/delivery/{$deliveryId}/location", self::METHOD_GET );
+    }
+
+    /**
+     * Получение списка статусов доставки
+     *
+     * @return Response
+     */
+    public function methodGetDirectoryDeliveryStatuses()
+    {
+        return $this->api( self::API_PATH . "directory/delivery/statuses" , self::METHOD_GET );
+    }
+
+    /**
+     * Получение списка способов оплат
+     *
+     * @return Response
+     */
+    public function methodGetDirectoryPaymentTypes()
+    {
+        return $this->api( self::API_PATH . "directory/payment/types", self::METHOD_GET );
+    }
+
+    /**
+     * Получение списка причин апелляций
+     *
+     * @return Response
+     */
+    public function methodGetDirectoryAppealSubject()
+    {
+        return $this->api( self::API_PATH . "directory/appeal/subject", self::METHOD_GET );
+    }
+
+    /**
+     * Получение списка статусов апелляций
+     *
+     * @return Response
+     */
+    public function methodGetDirectoryAppealStatus()
+    {
+        return $this->api( self::API_PATH . "directory/appeal/status", self::METHOD_GET );
+    }
 }
