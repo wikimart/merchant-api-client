@@ -744,17 +744,12 @@ class Client
     /**
      * Получение списка вариантов доставки магазина
      *
-     * @param $sellerId Идентификатор магазина
-     *
      * @return Response
      * @throws \InvalidArgumentException
      */
-    public function methodGetDirectorySellerDeliveryVariants($sellerId)
+    public function methodGetDirectoryDeliveryVariants()
     {
-        if ( !is_integer( $sellerId ) ) {
-            throw new InvalidArgumentException( 'Argument \'$sellerId\' must be integer' );
-        }
-        return $this->api( self::API_PATH . "directory/seller/{$sellerId}/delivery/variants/", self::METHOD_GET );
+        return $this->api( self::API_PATH . "directory/delivery/variants/", self::METHOD_GET );
     }
 
     /**
